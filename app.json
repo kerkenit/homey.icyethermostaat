@@ -1,0 +1,56 @@
+{
+	"id": "homey.icyethermostaat",
+	"version": "0.0.1",
+	"compatibility": "*",
+	"name": {
+		"en": "ICY E-Thermostaat",
+		"nl": "ICY E-Thermostaat"
+	},
+	"description": {
+		"en": "The ICY E-Thermostaat",
+		"nl": "De ICY E-Thermostaat"
+	},
+	"author": {
+		"name": "Joey Hiemstra"
+	},
+	"category": "climate",
+	"images": {
+		"large": "assets/images/large.jpg",
+		"small": "assets/images/small.jpg"
+	},
+	"drivers": [
+		{
+			"id": "thermostat",
+			"name": {
+				"en": "ICY E-Thermostaat",
+				"en": "ICY E-Thermostaat"
+			},
+			"class": "thermostat",
+			"capabilities": [ "target_temperature", "measure_temperature" ],
+			"images": {
+				"large": "drivers/thermostat/assets/images/large.png",
+				"small": "drivers/thermostat/assets/images/small.png"
+			},
+			"pair": [
+				{
+					"id": "start"
+				},
+				{
+					"id": "list_devices",
+					"template": "list_devices",
+					"navigation": {
+						"next": "add_stations"
+					}
+				},
+				{
+					"id": "add_stations",
+					"template": "add_devices"
+				}
+			]
+		}
+	],
+	"dependencies": {
+		"request": "*",
+		"extend": "*"
+	}
+}
