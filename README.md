@@ -1,7 +1,3 @@
-# homey.icyethermostaat
-Homey App for the ICY E-Thermostat
-
-
 # ICY E-Thermostaat - Homey App
 
 This app lets you control the ICY E-Thermostat. For example, Essent delivers this thermostat to his customers.
