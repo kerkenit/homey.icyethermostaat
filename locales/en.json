@@ -2,19 +2,15 @@
 	"pair": {
 		"start": {
 			"title": "Retreiving devices...",
-			"nosettings": "The settings have not been set correctly.",
 			"error": "An error has occured.",
-			"notauthorized": "The set credentials are not correct."
+			"notauthorized": "The set credentials are not correct.",
+			"required": "Username and password are required values."
 		}
 	},
-	"settings": {
-		"title": "ICY E-Thermostaat",
+	"auth": {
 		"intro": "Please provide your login credentials. These are the same as the portal.",
 		"save": "Save settings",
-		"authbox": {
-			"title": "Credentials",
-			"username": "Username",
-			"password": "Password"
-		}
+		"username": "Username",
+		"password": "Password"
 	}
 }

@@ -7,9 +7,6 @@ var extend			= require('extend');
 
 var api_url			= 'https://portal.icy.nl';
 
-var username = '';
-var password = '';
-
 var self = module.exports = {
 
 	init: function( devices, callback ){
@@ -46,32 +43,33 @@ var self = module.exports = {
 
 	pair: function( socket ) {
 
-		refreshSettings(function(){
+		// Send log
+		Homey.log('ICY E-Thermostaat pairing has started...');
 
-			// Send log
-			Homey.log('ICY E-Thermostaat pairing has started...');
+		// Define variables
+		var tempSerialthermostat = '';
+		var tempUsername = '';
+		var tempPassword = '';
 
-			var serialthermostat = '';
+		socket.on('get_devices', function( data, callback ) {
 
-			// If email/pass not set
-			if (username == '' || password =='') {
-
-				// Send log
-				Homey.log('ICY E-Thermostaat username/password not set');
-
-				// Cancel pairing
-				socket.emit( 'error', 'nosettings' )
-				return;
-
-			}
+			// Set passed credentials in variables
+			tempUsername = data.username;
+			tempPassword = data.password;
 
 			// Test credentials, get token.
 			request.post( api_url + '/login', {
+
+				// Build post data
 				form: {
-					'username'		: username,
-					'password'		: password
+					'username'		: tempUsername,
+					'password'		: tempPassword
 				},
+
+				// Send data as json
 				json: true
+
+			// On return
 			}, function( err, response, body ){
 
 				// If an error has occurred
@@ -79,8 +77,6 @@ var self = module.exports = {
 
 				// Checking credentials
 				Homey.log('ICY E-Thermostaat username/password are being checked');
-				Homey.log('ICY E-Thermostaat returned data:');
-				Homey.log(body);
 
 				// If status is 401 - Not authorized
 				if (body.status.code == 401) {
@@ -101,7 +97,7 @@ var self = module.exports = {
 					Homey.log('ICY E-Thermostaat username/password are correct');
 
 					// Set thermostat serial
-					serialthermostat = body.serialthermostat1;
+					tempSerialthermostat = body.serialthermostat1;
 
 					// Credentials work, continue
 					socket.emit ( 'continue', null );
@@ -120,23 +116,25 @@ var self = module.exports = {
 
 			});
 
-			socket.on('list_devices', function( data, callback ) {
+		});
 
-				var devices = [{
-					data: {
-						id				: serialthermostat
-					},
-					name: 'E-Thermostaat'
-				}];
+		socket.on('list_devices', function( data, callback ) {
 
-				callback( null, devices );
+			var devices = [{
+				data: {
+					id				: tempSerialthermostat,
+					username	: tempUsername,
+					password	: tempPassword
+				},
+				name: 'E-Thermostaat'
+			}];
 
-			});
+			callback( null, devices );
 
-			socket.on('disconnect', function( data, callback ){
-				console.log('disconnect!!!', arguments)
-			});
+		});
 
+		socket.on('disconnect', function( data, callback ){
+			console.log('disconnect!!!', arguments)
 		});
 
 	}
@@ -150,79 +148,27 @@ var thermostatInfoCache = {
 
 function getThermostatInfo( device, force, callback ) {
 
-	refreshSettings(function(){
+	if( typeof force == 'function' ) callback = force;
 
-		if( typeof force == 'function' ) callback = force;
+	// Send log
+	Homey.log('ICY E-Thermostaat checking data');
 
-		// Send log
-		Homey.log('ICY E-Thermostaat checking data');
+	// Check if cache is within time range
+	if( !force && ((new Date) - thermostatInfoCache.updated_at) < 1000 * 60 * 2 ) {
 
-		// Check if cache is within time range
-		if( !force && ((new Date) - thermostatInfoCache.updated_at) < 1000 * 60 * 2 ) {
+		// Cache is younger then 2 minutes, serve cache instead of live data.
+		callback(thermostatInfoCache.data);
 
-			// Cache is younger then 2 minutes, serve cache instead of live data.
-			Homey.log('ICY E-Thermostaat serving old data');
-			callback(thermostatInfoCache.data);
+	} else {
 
-		} else {
-
-			// Cache is older then 2 minutes, get fresh data
-			Homey.log('ICY E-Thermostaat serving new data');
-			Homey.log('ICY E-Thermostaat getting new data');
-
-			// Get token
-			getToken(function(token){
-				request.get( api_url + '/data', {
-					form: {
-						'username'		: username,
-						'password'		: password
-					},
-					headers: {
-			      'Session-token': token
-			    },
-					json: true
-				}, function( err, response, body ){
-
-					if( err ) return callback(err);
-
-					Homey.log('ICY E-Thermostaat retreived new data:');
-					Homey.log(body);
-
-					// Update cache data
-					thermostatInfoCache.updated_at = new Date();
-					thermostatInfoCache.data = body;
-
-					// Set the new temperature
-					self.realtime(device, 'measure_temperature', thermostatInfoCache.data.temperature2);
-					self.realtime(device, 'target_temperature', thermostatInfoCache.data.temperature1);
-
-					// Return new data
-					callback( null, thermostatInfoCache.data );
-
-				});
-
-			});
-
-		}
-
-	});
-
-}
-
-
-function setThermostatTemperature( device, temperature, callback ) {
-
-	refreshSettings(function(){
-
-		// Send log
-		Homey.log('ICY E-Thermostaat sending new temperature');
+		// Cache is older then 2 minutes, get fresh data
 
 		// Get token
-		getToken(function(token){
-			request.post( api_url + '/data', {
+		getToken(device, function(token){
+			request.get( api_url + '/data', {
 				form: {
-					'uid'					: device.id,
-					'temperature1'		: temperature
+					'username'		: device.username,
+					'password'		: device.password
 				},
 				headers: {
 		      'Session-token': token
@@ -230,49 +176,49 @@ function setThermostatTemperature( device, temperature, callback ) {
 				json: true
 			}, function( err, response, body ){
 
-				Homey.log(body);
-
 				if( err ) return callback(err);
 
-				// update thermosmart info
-				getThermostatInfo( device, true, callback );
+				// Update cache data
+				thermostatInfoCache.updated_at = new Date();
+				thermostatInfoCache.data = body;
+
+				// Set the new temperature
+				self.realtime(device, 'measure_temperature', thermostatInfoCache.data.temperature2);
+				self.realtime(device, 'target_temperature', thermostatInfoCache.data.temperature1);
+
+				// Return new data
+				callback( null, thermostatInfoCache.data );
 
 			});
 
 		});
 
-	});
+	}
 
 }
 
+function setThermostatTemperature( device, temperature, callback ) {
 
-function getToken(callback){
+	// Send log
+	Homey.log('ICY E-Thermostaat sending new temperature');
 
-	refreshSettings(function(){
-
-		Homey.log('ICY E-Thermostaat retreiving new token');
-
-		// Test credentials, get token.
-		request.post( api_url + '/login', {
+	// Get token
+	getToken(device, function(token){
+		request.post( api_url + '/data', {
 			form: {
-				'username'		: username,
-				'password'		: password
+				'uid'					: device.id,
+				'temperature1'		: temperature
 			},
+			headers: {
+	      'Session-token': token
+	    },
 			json: true
 		}, function( err, response, body ){
 
 			if( err ) return callback(err);
 
-			// If status is 200 - Ok
-			if (body.status.code == 200) {
-
-				// Send log
-				Homey.log('ICY E-Thermostaat username/password are correct, returning token.');
-
-				// Return token
-				callback(body.token);
-
-			}
+			// update thermosmart info
+			getThermostatInfo( device, true, callback );
 
 		});
 
@@ -280,12 +226,34 @@ function getToken(callback){
 
 }
 
-function refreshSettings(callback) {
 
-	username = Homey.manager("settings").get("username");
-	password = Homey.manager("settings").get("password");
+function getToken(device, callback){
 
-	callback(true);
+	Homey.log('ICY E-Thermostaat retreiving new token');
+
+	// Test credentials, get token.
+	request.post( api_url + '/login', {
+		form: {
+			'username'		: device.username,
+			'password'		: device.password
+		},
+		json: true
+	}, function( err, response, body ){
+
+		if( err ) return callback(err);
+
+		// If status is 200 - Ok
+		if (body.status.code == 200) {
+
+			// Send log
+			Homey.log('ICY E-Thermostaat username/password are correct, returning token.');
+
+			// Return token
+			callback(body.token);
+
+		}
+
+	});
 
 }
 

@@ -2,19 +2,15 @@
 	"pair": {
 		"start": {
 			"title": "Apparaten opzoeken...",
-			"nosettings": "De instellingen zijn niet correct ingevuld.",
 			"error": "Er is een fout opgetreden.",
-			"notauthorized": "De opgegeven inloggegevens zijn niet correct."
+			"notauthorized": "De opgegeven inloggegevens zijn niet correct.",
+			"required": "Gebruikersnaam en wachtwoord zijn verplicht."
 		}
 	},
-	"settings": {
-		"title": "ICY E-Thermostaat",
+	"auth": {
 		"intro": "Geef uw inloggegevens op. Deze zijn identiek aan de gegevens voor het portaal.",
 		"save": "Opslaan",
-		"authbox": {
-			"title": "Inloggegevens",
-			"username": "Gebruikersnaam",
-			"password": "Wachtwoord"
-		}
+		"username": "Gebruikersnaam",
+		"password": "Wachtwoord"
 	}
 }
