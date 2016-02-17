@@ -1,8 +1,8 @@
 {
 	"pair": {
 		"start": {
-			"title": "Retreiving devices...",
-			"error": "An error has occured.",
+			"title": "retrieving devices...",
+			"error": "An error has occurred.",
 			"notauthorized": "The set credentials are not correct.",
 			"required": "Username and password are required values."
 		}
