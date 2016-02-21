@@ -4,6 +4,5 @@ This app lets you control the ICY E-Thermostat. For example, Essent delivers thi
 
 ### Installation:
 1. Add app from the app store
-2. Go to the settings page and set the credentials you use to login to the online portal
-3. Add the device
-4. Profit!
+2. Add the device and follow the pairing wizard
+3. Profit!
