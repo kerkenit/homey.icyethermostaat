@@ -9,7 +9,7 @@
 	},
 	"auth": {
 		"intro": "Geef uw inloggegevens op. Deze zijn identiek aan de gegevens voor het portaal.",
-		"save": "Opslaan",
+		"save": "Doorgaan",
 		"username": "Gebruikersnaam",
 		"password": "Wachtwoord"
 	}

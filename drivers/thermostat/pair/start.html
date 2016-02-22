@@ -61,27 +61,50 @@ function saveSettings () {
     <p data-i18n="auth.intro"></p>
 
 		<style>
-			.authentication {
-				border:none;
-				padding:5px;
+
+			label {
+				margin-bottom: 5px;
+	    	display: block !important
 			}
 
 			input {
-				font-size:16px;
+		    padding: .5em .75em;
+		    vertical-align: middle;
+		    font-size: 12px;
+		    font-family: inherit;
+		    font-weight: inherit;
+		    border: 1px solid #aaa;
+		    border-radius: 2px;
+				width: 250px !important;
+				margin-bottom: 5px;
 			}
+
+			button, .button {
+				padding: .5em .75em;
+				font-size: 12px;
+				font-family: inherit;
+				font-weight: inherit;
+				border: 1px solid #ccc;
+				background: #eee;
+				border-radius: 3px;
+				box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+				margin-top: 10px;
+			}
+
 		</style>
 
-		<table class="authentication">
-			<tr>
-				<td style="width:100px;" data-i18n="auth.username"></td>
-				<td><input id="username" type="text" value="" placeholder="____________________"/></td>
-			</tr>
-			<tr>
-				<td style="width:100px;" data-i18n="auth.password"></td>
-				<td><input id="password" type="password" value="" placeholder="____________________"/></td>
-			</tr>
-		</table>
 
 <fieldset>
-    <button id="authentication_button" data-i18n="auth.save" onclick="saveSettings()"></button>
+
+	<div class="field row">
+			<label for="username" data-i18n="auth.username"></label>
+			<input id="username" type="text" value="" />
+	</div>
+	<div class="field row">
+			<label for="password" data-i18n="auth.password"></label>
+			<input id="password" type="password" value="" />
+	</div>
+
+  <button id="authentication_button" data-i18n="auth.save" onclick="saveSettings()"></button>
+
 </fieldset>
