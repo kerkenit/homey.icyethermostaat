@@ -165,32 +165,33 @@ function getThermostatInfo( device, force, callback ) {
 
 		// Get token
 		getToken(device, function(token){
-			request.get( api_url + '/data', {
-				form: {
-					'username'		: device.username,
-					'password'		: device.password
-				},
-				headers: {
-		      'Session-token': token
-		    },
-				json: true
-			}, function( err, response, body ){
+			if(token !== false) {
+				request.get( api_url + '/data', {
+					form: {
+						'username'		: device.username,
+						'password'		: device.password
+					},
+					headers: {
+			      'Session-token': token
+			    },
+					json: true
+				}, function( err, response, body ){
 
-				if( err ) return callback(err);
+					if( err ) return callback(err);
 
-				// Update cache data
-				thermostatInfoCache.updated_at = new Date();
-				thermostatInfoCache.data = body;
+					// Update cache data
+					thermostatInfoCache.updated_at = new Date();
+					thermostatInfoCache.data = body;
 
-				// Set the new temperature
-				self.realtime(device, 'measure_temperature', thermostatInfoCache.data.temperature2);
-				self.realtime(device, 'target_temperature', thermostatInfoCache.data.temperature1);
+					// Set the new temperature
+					self.realtime(device, 'measure_temperature', thermostatInfoCache.data.temperature2);
+					self.realtime(device, 'target_temperature', thermostatInfoCache.data.temperature1);
 
-				// Return new data
-				callback( null, thermostatInfoCache.data );
+					// Return new data
+					callback( null, thermostatInfoCache.data );
 
-			});
-
+				});
+			}
 		});
 
 	}
@@ -204,24 +205,25 @@ function setThermostatTemperature( device, temperature, callback ) {
 
 	// Get token
 	getToken(device, function(token){
-		request.post( api_url + '/data', {
-			form: {
-				'uid'					: device.id,
-				'temperature1'		: temperature
-			},
-			headers: {
-	      'Session-token': token
-	    },
-			json: true
-		}, function( err, response, body ){
+		if(token !== false) {
+			request.post( api_url + '/data', {
+				form: {
+					'uid'					: device.id,
+					'temperature1'		: temperature
+				},
+				headers: {
+		      'Session-token': token
+		    },
+				json: true
+			}, function( err, response, body ){
 
-			if( err ) return callback(err);
+				if( err ) return callback(err);
 
-			// update thermosmart info
-			getThermostatInfo( device, true, callback );
+				// update thermosmart info
+				getThermostatInfo( device, true, callback );
 
-		});
-
+			});
+		}
 	});
 
 }
@@ -242,15 +244,20 @@ function getToken(device, callback){
 
 		if( err ) return callback(err);
 
-		// If status is 200 - Ok
-		if (body.status.code == 200) {
+		if(body.status !== undefined && body.status !== null && body.status.code !== undefined && body.status.code !== null) {
+			// If status is 200 - Ok
+			if (body.status.code == 200) {
+				module.exports.setAvailable(device);
+				// Send log
+				Homey.log('ICY E-Thermostaat username/password are correct, returning token.');
 
-			// Send log
-			Homey.log('ICY E-Thermostaat username/password are correct, returning token.');
+				// Return token
+				callback(body.token);
 
-			// Return token
-			callback(body.token);
-
+			}
+		} else {
+			module.exports.setUnavailable(device, "ICY E-Thermostaat Webservice Offline." );
+			callback(false);
 		}
 
 	});
